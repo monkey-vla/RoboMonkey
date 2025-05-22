@@ -42,4 +42,5 @@ pip install flashinfer -i https://flashinfer.ai/whl/cu121/torch2.4/
 pip install timm===0.9.10 openpyxl
 pip install fastapi uvicorn
 pip install tensorflow
+pip install transformers==4.51.3
 check_status "SGLang setup"

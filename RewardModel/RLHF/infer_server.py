@@ -329,7 +329,7 @@ class RobotRewardModel:
                     args=args,
                     config=config,
                     qlora=True,
-                    checkpoint_dir="/root/LLaVA-RLHF/model_dir/checkpoint",
+                    checkpoint_dir="../../model_dir/checkpoint",
                     tokenizer=tokenizer,
                 ).to(torch.bfloat16)
 

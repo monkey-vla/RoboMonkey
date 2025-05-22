@@ -3,8 +3,11 @@
 set -e
 set -x
 
+full_path=$(realpath $0)
+dir_path=$(dirname $full_path)
+
 export CUDA_VISIBLE_DEVICES=0
-export MODEL_DIR="/root/LLaVA-RLHF/model_dir"
+export MODEL_DIR="$dir_path/../../model_dir"
 export PYTHONPATH="$PWD:$PYTHONPATH"
 export GPUS_PER_NODE=1
 

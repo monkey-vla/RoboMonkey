@@ -39,7 +39,7 @@ Spin up the base policy server in a tmux terminal to keep it running.
 tmux
 conda activate sglang-vla
 cd sglang-vla/serve_vla
-CUDA_VISIBLE_DEVICES=1 python openvla_server.py
+CUDA_VISIBLE_DEVICES=1 python vla_server.py
 ```
 
 ### Reward Model
@@ -57,6 +57,7 @@ bash infer_server.sh
 ### Install SIMPLER benchmark
 
 ```bash
+bash scripts/env_simpler.sh
 tmux
 conda activate simpler_env && \
 	export PRISMATIC_DATA_ROOT=. && \

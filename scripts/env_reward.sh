@@ -29,7 +29,7 @@ else
 fi
 
 conda activate robomonkey-reward
-cd "$dir_path/../RewardModel/llava_setup/"
+cd "$dir_path/../RewardModel/llava_setup/LLaVA"
 
 pip install --upgrade pip
 pip install -e .
