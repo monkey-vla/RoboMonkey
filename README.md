@@ -64,7 +64,24 @@ conda activate simpler_env && \
     export PYTHONPATH=. && \
 	cd openvla-mini
 xvfb-run --auto-servernum -s "-screen 0 640x480x24" python experiments/robot/simpler/run_simpler_eval.py \
---task_suite_name simpler_widowx \
---center_crop True \
---use_wandb False
+    --task_suite_name simpler_widowx \
+    --center_crop True \
+    --use_wandb False
+```
+
+## Run Benchmark without Reward Model
+
+Go to `openvla-mini/experiments/config.py` and change its content to `BATCH_SIZE = 1`, then follow the same instructions to run the benchmark without the reward model.
+
+```bash
+bash scripts/env_simpler.sh
+tmux
+conda activate simpler_env && \
+	export PRISMATIC_DATA_ROOT=. && \
+    export PYTHONPATH=. && \
+	cd openvla-mini
+xvfb-run --auto-servernum -s "-screen 0 640x480x24" python experiments/robot/simpler/run_simpler_eval.py \
+    --task_suite_name simpler_widowx \
+    --center_crop True \
+    --use_wandb False
 ```
