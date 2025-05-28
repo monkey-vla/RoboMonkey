@@ -66,9 +66,14 @@ conda activate simpler_env && \
 xvfb-run --auto-servernum -s "-screen 0 640x480x24" python experiments/robot/simpler/run_simpler_eval.py \
     --task_suite_name simpler_widowx \
     --center_crop True \
-    --use_wandb False
+    --use_wandb False \
+    --robomonkey_batch_size 5
 ```
 
 ## Run Benchmark without Reward Model
 
-Go to `openvla-mini/experiments/config.py` and change its content to `BATCH_SIZE = 1`, then follow the same instructions above to run the benchmark without the reward model.
+Change the above command-line argument of `robomonkey_batch_size` to `--robomonkey_batch_size 1` to run the benchmark without the reward model.
+
+## Acknowledgements
+
+We thank the authors of [OpenVLA](https://github.com/openvla/openvla), [SGLang](https://github.com/sgl-project/sglang), and [OpenVLA-mini](https://github.com/Stanford-ILIAD/openvla-mini) for their contributions to the open-source community.
