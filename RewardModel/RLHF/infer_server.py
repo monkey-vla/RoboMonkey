@@ -7,6 +7,8 @@ import os
 from dataclasses import dataclass, field
 from typing import Optional, List, Literal
 import logging
+from typing import Sequence
+import einops
 
 import torch
 import transformers
@@ -29,6 +31,8 @@ from models.reward_model import (
     compute_reward_modeling_metrics,
 )
 
+from action_processing import ActionTokenizer
+
 from llava import conversation as conversation_lib
 from llava.model import *
 from llava.mm_utils import tokenizer_image_token
@@ -39,7 +43,7 @@ from llava.constants import (
     DEFAULT_IM_START_TOKEN,
     DEFAULT_IM_END_TOKEN,
 )
-
+from llava.conversation import conv_templates, SeparatorStyle
 from llava.train.train import smart_tokenizer_and_embedding_resize
 from data_utils.common_utils import preprocess
 
@@ -351,7 +355,6 @@ class RobotRewardModel:
             ) = model_args.mm_use_im_start_end
             training_args.use_im_start_end = model_args.mm_use_im_start_end
 
-            # print(model)
             set_seed(args.seed)
             self.tokenizer = tokenizer
             self.model = model
@@ -360,10 +363,7 @@ class RobotRewardModel:
 
     def get_rewards(self, instruction, image_path, actions):
         batch_size = len(actions)
-        #input id works -----------------------------------------------------------
-        from action_processing import ActionTokenizer
         action_tokenizer = ActionTokenizer(self.tokenizer)
-        from llava.conversation import conv_templates, SeparatorStyle
         conv_mode = "vicuna_v1"
         conv_template = conv_templates[conv_mode].copy()
 
@@ -371,79 +371,45 @@ class RobotRewardModel:
         instruction = instruction.lower().rstrip('.')
 
         for action in actions:
-            # Prepare conversation
             action_id = np.array(action)
             if type(action_id[0]) == float:
                 action_id = action_tokenizer(action)
-            # print(action_id)
-            # if isinstance(action, list) and all(isinstance(x, int) for x in action):
-            #     # print(type(action))
-            #     action_id = action
-            # else:
-            #     action_id = action_tokenizer(action)
-            holder = "hello hello hello hello hello hello hello" 
+            action_holder = ' '.join(['placeholder'] * 7) # seven identical tokens
+            
             inp = (f"shows the current observation from the robot's wrist-mounted camera. "
                     f"The robot manipulation arm is attempting to {instruction}. "
                     f"What action should the robot take to effectively accomplish the task? "
-                    f"ASSISTANT: The robot should take the action: {holder} </s> "
+                    f"ASSISTANT: The robot should take the action: {action_holder} </s> "
                     f"USER: Please evaluate the quality of the robot action. "
                     f"A good robot action should consider different factors, "
                     f"especially interactions with surrounding objects and human preferences.\n"
                     f"ASSISTANT: Based on how humans would control the robot arm and the "
                     f"awareness of the situation, the quality score of the robot action is")
-
             inp = DEFAULT_IMAGE_TOKEN + '\n' + inp
-
             conv = conv_template.copy()
             conv.append_message(conv.roles[0], inp)
             prompt = conv.get_prompt()
-
-            # prompt = "<s> " + prompt
-            prompt = prompt.replace("<image>", " holder ")
-
-            # print("original prompt: ", prompt)
-
+            prompt = prompt.replace("<image>", " placeholder ")
             in_ids = self.tokenizer(
                 prompt,
                 return_tensors="pt",
                 padding="longest",
-                max_length=self.tokenizer.model_max_length,
+                max_length=self.tokenizer.model_max_length + 2,
                 truncation=True,
             ).input_ids
 
-            # print("id: ", in_ids)
+            first_image_idx = (in_ids == 12983).nonzero() # Token ID of "placeholder" is 12983
+            start_idx = first_image_idx[0][1].item()
+            in_ids[0, start_idx: start_idx + 1] = -200
 
-            repeated_indices = (in_ids == 22172).nonzero()
-            start_idx = repeated_indices[0][1].item()  # Get the first occurrence
-            end_idx = repeated_indices[-1][1].item() + 1  # Get the last occurrence + 1
-            in_ids[0, start_idx:end_idx] = torch.tensor(action_id-1000)
-
-            first_19464_idx = (in_ids == 19464).nonzero()
-            start_idx = first_19464_idx[0][1].item()  # Get the first occurrence
-            in_ids[0, start_idx: start_idx+1] = -200
+            action_indices = (in_ids == 12983).nonzero() # Token ID of "placeholder" is 12983
+            start_idx = action_indices[0][1].item()
+            in_ids[0, start_idx:start_idx + 7] = torch.tensor(action_id - 1000)
 
             in_ids = in_ids[:, :-1]
-
-            # Find first occurrence of 25
-            # first_25_idx = (in_ids == 25).nonzero()
-            # start_idx = first_25_idx[0][1].item()  # Get the first occurrence
-            # in_ids[0, start_idx+1] = -220
-            # in_ids = torch.cat([in_ids[:, :start_idx+2], in_ids[:, start_idx+3:]], dim=1)
-
-            # Find first occurrence of 256
-            # first_256_idx = (in_ids == 256).nonzero()
-            # start_idx = first_256_idx[0][1].item()  # Get the first occurrence
-            # in_ids[0, start_idx] = 220
-
             in_ids = torch.tensor(in_ids, dtype=torch.long).squeeze(0)
-
-            # print("updated id: ", in_ids)
-            # print(in_ids.shape)
             action_in_ids.append(in_ids)
 
-        # ex_input_ids = torch.tensor(action_in_ids, dtype=torch.long)
-        from typing import Sequence
-        import einops
         def pad_sequence_from_left(
             sequences: Sequence[torch.Tensor],
             batch_first: bool = False,
@@ -476,19 +442,10 @@ class RobotRewardModel:
         input_ids = _left_pad_helper(action_in_ids, batch_size).squeeze(0)
         attention_mask = input_ids.ne(self.tokenizer.pad_token_id).long()
 
-        # print("input_ids: ", input_ids.shape)
-        # print("pad id: ", in_ids)
-        # print("attn_mask: ", attention_mask.shape)
-        #input id works -----------------------------------------------------------
-
-        #image loading works
         from PIL import Image
         processor = self.data_args.image_processor
         
         image = Image.open(image_path).convert("RGB")
-        # image = bridge_process(image)
-        # scaled_image = np.clip((image + 1) * 127.5, 0, 255).astype(np.uint8)
-        # image = Image.fromarray(scaled_image).convert("RGB")
 
         if self.data_args.image_aspect_ratio == "pad":
             def expand2square(pil_img, background_color):
@@ -534,24 +491,12 @@ class RobotRewardModel:
         return scores.rewards.detach().cpu().tolist()
 
 if __name__ == "__main__":
-    # rm = RobotRewardModel()
-
-    # instruction = "move the yellow knife to the right of the pan"
-    # image_path = "images/robot.jpg"
-    # actions = [
-    #     [-0.0006071124225854874, -0.001102231559343636, -0.002975916489958763, -0.0037233866751194, 0.009374408982694149, 0.00042649864917621017, 1.003713607788086], #action0
-    #     [0.0007309613865800202, -0.00033146265195682645, 8.855393389239907e-05, 0.0023672617971897125, -0.00297730159945786, 0.0071182833053171635, 1.0025840997695923],
-    #             [-0.0006071124225854874, -0.001102231559343636, -0.002975916489958763, -0.0037233866751194, 0.009374408982694149, 0.00042649864917621017, 1.003713607788086], #action0
-    #     [0.0007309613865800202, -0.00033146265195682645, 8.855393389239907e-05, 0.0023672617971897125, -0.00297730159945786, 0.0071182833053171635, 1.0025840997695923],
-    # ]
-
-    # scores = rm.get_reward(instruction, image_path, actions)
-    # print(scores)
     from fastapi import FastAPI, HTTPException, Request
     from pydantic import BaseModel
     import uvicorn
     import json_numpy as json
     import numpy as np
+    import time
 
     app = FastAPI()
 
@@ -584,7 +529,6 @@ if __name__ == "__main__":
         if action_array.ndim != 2:
             raise HTTPException(status_code=400, detail="Action must be a 2D array")
 
-        import time
         start_time = time.time()
 
         rewards = reward_model.get_rewards(instruction, image_path, action_array)
