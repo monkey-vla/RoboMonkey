@@ -42,5 +42,5 @@ pip install datasets wandb "numpy<2" json_numpy openpyxl tensorflow
 check_status "LLaVA-RLHF dependencies"
 
 # Setup directories and download model
-mkdir -p "$dir_path/../"
+cd "$dir_path/../"
 git clone https://huggingface.co/robomonkey-vla/RewardModel model_dir
