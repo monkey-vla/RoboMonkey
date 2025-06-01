@@ -34,10 +34,9 @@ bash scripts/env_reward.sh  # install the robomonkey-reward environment
 
 ## Getting Started
 
-Spin up the reward model server.
+Spin up the reward model server in a separate terminal.
 
 ```bash
-tmux
 conda activate robomonkey-reward
 cd RewardModel/RLHF
 bash infer_server.sh
