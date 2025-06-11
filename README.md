@@ -39,7 +39,7 @@ Spin up the reward model server in a separate terminal.
 ```bash
 conda activate robomonkey-reward
 cd RewardModel/RLHF
-bash infer_server.sh
+python infer_server.py
 ```
 
 You can run `python test/test.py` to test if the reward model is set up correctly.
