@@ -5,6 +5,7 @@ import json_numpy as json
 import pickle
 import numpy as np
 import math
+from pathlib import Path
 
 def get_rewards(instruction, image_path, actions):
     # Initialize rewards list
@@ -35,16 +36,16 @@ def get_rewards(instruction, image_path, actions):
     return all_rewards
 
 with open('actions.pkl', 'rb') as f:
-    args = pickle.load(f)
+    args = list( pickle.load(f) )
+    instruction, image_path, actions = args
+    image_path = str(Path(image_path).absolute())
+    print(instruction, image_path)
 
 with open('result.pkl', 'rb') as f:
     expected_result = pickle.load(f)
 
 
-print("Actions:", args)
-
-result = get_rewards(*args)
-
+result = get_rewards(instruction, image_path, actions)
 
 print("Expected: ", expected_result)
 
