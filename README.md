@@ -24,7 +24,7 @@ git clone --recurse-submodules https://github.com/monkey-vla/RoboMonkey.git
 ```
 Alternatively, to clone the submodules after you have cloned this repo: `git submodule update --init --recursive`.
 
-The script installs RoboMonkey reward model in a separate conda environment to prevent environment interference with the base VLA model. The reward model communicates with the base model and the simulator via HTTP endpoints. We provide bash scripts that set up the environments.
+The script installs RoboMonkey reward model in a separate conda environment to prevent environment interference with the base VLA model. The reward model communicates with the base model and the simulator via HTTP endpoints. We provide bash scripts that set up the environments. The scripts have been verified to run on 2x RTX4090 with [this](https://hub.docker.com/layers/nvidia/cuda/11.8.0-cudnn8-devel-ubuntu20.04/images/sha256-0b25e1f1c6f596a6c92b04cb825714be41b4dc8323ba71205dbae8b11bfa672c) image.
 
 ```bash
 cd RoboMonkey
@@ -88,4 +88,4 @@ Change the above command-line argument of `robomonkey_batch_size` to `--robomonk
 
 ## Acknowledgements
 
-We thank the authors of [OpenVLA](https://github.com/openvla/openvla), [SGLang](https://github.com/sgl-project/sglang), and [OpenVLA-mini](https://github.com/Stanford-ILIAD/openvla-mini) for their contributions to the open-source community.
+We thank the authors of [OpenVLA](https://github.com/openvla/openvla), [SGLang](https://github.com/sgl-project/sglang), [SimplerEnv](https://github.com/simpler-env/SimplerEnv) and [OpenVLA-mini](https://github.com/Stanford-ILIAD/openvla-mini) for their contributions to the open-source community.
