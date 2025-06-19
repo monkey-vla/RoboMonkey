@@ -38,7 +38,7 @@ pip install ninja
 # LLaVA-RLHF dependencies
 pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
 pip install deepspeed==0.9.3 peft==0.4.0 transformers==4.31.0 bitsandbytes==0.41.0
-pip install datasets wandb "numpy<2" json_numpy openpyxl tensorflow
+pip install datasets==3.6.0 wandb==0.20.1 numpy==1.26.4 json_numpy openpyxl==3.1.5 tensorflow==2.19.0
 check_status "LLaVA-RLHF dependencies"
 
 # Setup directories and download model

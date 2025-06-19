@@ -39,19 +39,19 @@ sudo apt-get install -y libvulkan1 cudnn9-cuda-12 libx11-6
 pip install --upgrade pip
 pip install numpy==1.24.4
 pip install -r requirements_full_install.txt --use-deprecated=legacy-resolver
-pip install torch torchvision torchaudio
+pip install torch==2.2.1+cu118 torchvision==0.15.2+cu118 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu118
 pip install tensorflow-probability==0.24.0
 check_status "SimplerEnv base setup"
 
 # Additional SimplerEnv dependencies
 pip install -e ./ManiSkill2_real2sim/
 pip install -e .
-pip install pandas openpyxl matplotlib mediapy
+pip install pandas==2.3.0 openpyxl==3.1.5 matplotlib==3.10.3 mediapy==1.2.0
 pip install tensorflow[and-cuda]==2.18.0
-pip install "git+https://github.com/nathanrooy/simulated-annealing"
+pip install "git+https://github.com/nathanrooy/simulated-annealing@293e2b0ad88f81668e98ae104ee204d41b8b34f5"
 pip install flax==0.8.1
 pip install dlimp "git+https://github.com/kvablack/dlimp@d08da3852c149548aaa8551186d619d87375df08"
-pip install distrax==0.1.5 flax==0.8.1 transformers wandb mediapy==1.2.0 tf_keras einops
+pip install distrax==0.1.5 flax==0.8.1 transformers==4.40.1 wandb==0.20.1 mediapy==1.2.0 tf_keras==2.19.0 einops==0.8.1
 pip install chex==0.1.2
 check_status "SimplerEnv additional dependencies"
 
@@ -60,8 +60,9 @@ echo "Setting up OpenVLA-mini..."
 cd "$dir_path/../openvla-mini"
 pip install -e .
 pip install -r requirements-min.txt
-pip install draccus rich accelerate tensorflow_graphics jsonlines robosuite==1.4.0 bddl easydict gym PyOpenGL_accelerate scikit-learn
+pip install draccus==0.8.0 rich==14.0.0 accelerate==1.8.0 tensorflow==2.15.0 tensorflow-graphics==2021.12.3 jsonlines==4.0.0 robosuite==1.4.0 bddl==3.5.0 easydict==1.13 gym==0.23.0 PyOpenGL-accelerate==3.1.9 scikit-learn==1.7.0
 pip install flash-attn -U --no-build-isolation
+pip install ml_dtypes==0.5.0
 check_status "OpenVLA-mini setup"
 
 # Environment variables
