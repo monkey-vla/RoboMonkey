@@ -29,7 +29,7 @@ The script installs RoboMonkey reward model in a separate conda environment to p
 
 Your system should have conda, apt packages, and git LFS set up correctly. If not, use the following script:
 ```bash
-./scripts/env.sh
+bash scripts/env.sh
 ```
 
 ## Reward Model

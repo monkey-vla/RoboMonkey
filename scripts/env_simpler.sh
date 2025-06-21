@@ -39,7 +39,6 @@ sudo apt-get install -y libvulkan1 cudnn9-cuda-12 libx11-6
 pip install --upgrade pip
 pip install numpy==1.24.4
 pip install -r requirements_full_install.txt --use-deprecated=legacy-resolver
-pip install torch==2.2.1+cu118 torchvision==0.15.2+cu118 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu118
 pip install tensorflow-probability==0.24.0
 check_status "SimplerEnv base setup"
 
@@ -61,7 +60,6 @@ cd "$dir_path/../openvla-mini"
 pip install -e .
 pip install -r requirements-min.txt
 pip install draccus==0.8.0 rich==14.0.0 accelerate==1.8.0 tensorflow==2.15.0 tensorflow-graphics==2021.12.3 jsonlines==4.0.0 robosuite==1.4.0 bddl==3.5.0 easydict==1.13 gym==0.23.0 PyOpenGL-accelerate==3.1.9 scikit-learn==1.7.0
-pip install flash-attn -U --no-build-isolation
 pip install ml_dtypes==0.5.0
 check_status "OpenVLA-mini setup"
 
