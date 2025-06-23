@@ -1,6 +1,6 @@
 # RoboMonkey
 
-<!-- [![arXiv]()]() -->
+<!-- [![arXiv](https://img.shields.io/badge/arXiv-2406.09246-df2a2a.svg?style=for-the-badge)](https://robomonkey-vla.github.io/static/RoboMonkey-2025.pdf/) -->
 [![Project Website](https://img.shields.io/badge/Project-Website-blue?style=for-the-badge)](https://robomonkey-vla.github.io/)
 [![HF Models](https://img.shields.io/badge/%F0%9F%A4%97-Models-yellow?style=for-the-badge)](https://huggingface.co/robomonkey-vla/RewardModel)
 [![License](https://img.shields.io/badge/LICENSE-MIT-green?style=for-the-badge)](LICENSE)
@@ -59,7 +59,7 @@ Spin up the base policy server in a separate terminal to keep it running.
 ```bash
 conda activate sglang-vla
 cd sglang-vla/serve_vla
-CUDA_VISIBLE_DEVICES=1 python vla_server.py
+CUDA_VISIBLE_DEVICES=1 python vla/openvla_server.py --seed 1
 ```
 
 ## SIMPLER Benchmark
