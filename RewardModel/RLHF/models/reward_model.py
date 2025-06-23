@@ -273,11 +273,12 @@ class RewardModelTrainer(transformers.Trainer):
 
         super(RewardModelTrainer, self)._save(output_dir, state_dict)
 
-    def compute_loss(self, model, inputs, return_outputs=False):
-        # input_ids, attention_mask each of size (bsz, num_candidates, seq_len).
-        # index_0, index_1 each of size (bsz, num_pairs); indexes into input_ids.
-        # choice of size (bsz, num_pairs); 1 if index_1's seq is chosen, 0 otherwise.
-        input_ids, attention_mask, index_0, index_1, choice, images = unpack_dict(
+    def compute_loss(self, model, inputs, return_outputs=False, alpha=0.1):
+        """
+        Computes the loss for the reward model training.
+        """
+
+        input_ids, attention_mask, index_0, index_1, choice, images, nrmse_0, nrmse_1 = unpack_dict(
             inputs,
             keys=(
                 "input_ids",
@@ -286,9 +287,11 @@ class RewardModelTrainer(transformers.Trainer):
                 "index_1",
                 "choice",
                 "images",
+                "nrmse_0",
+                "nrmse_1"  
             ),
         )
-        # repeat images to match the number of candidates
+
         images = images.unsqueeze(1).repeat(1, input_ids.size(1), 1, 1, 1)
         images = einops.rearrange(images, "b n h w c -> (b n) h w c")
 
@@ -296,26 +299,53 @@ class RewardModelTrainer(transformers.Trainer):
         input_ids_flat, attention_mask_flat = tuple(
             einops.rearrange(x, "b c l -> (b c) l") for x in (input_ids, attention_mask)
         )
+
         outputs = model(
             input_ids=input_ids_flat, attention_mask=attention_mask_flat, images=images
         )
+
         rewards_flat = outputs.rewards
         rewards = einops.rearrange(
             rewards_flat, "(b c) -> b c", c=num_candidates
-        )  # Size: (bsz, num_candidates).
+        )
 
         rewards_0, rewards_1 = tuple(
             batch_select(rewards, index) for index in (index_0, index_1)
-        )  # Size: (bsz, num_pairs).
-        logits = rewards_1 - rewards_0  # Size: (bsz, num_pairs).
-        # Type casting of `choice` is due to amp.autocast context manager.
-        loss = F.binary_cross_entropy_with_logits(
-            logits, choice.to(logits.dtype), reduction="mean"
-        )
+        ) 
 
-        loss = loss + (rewards_1 + rewards_0).mean().abs() * 1e-3
+        logits = rewards_1 - rewards_0 
+        logits_dtype = logits.dtype
+        logits_device = logits.device
+        choice_float = choice.to(dtype=logits_dtype, device=logits_device)
+        nrmse_0 = nrmse_0.to(dtype=logits_dtype, device=logits_device)
+        nrmse_1 = nrmse_1.to(dtype=logits_dtype, device=logits_device)
 
+        # Identify rewards for the winning (W) and losing (L) actions based on 'choice'
+        reward_W = choice_float * rewards_1 + (1 - choice_float) * rewards_0
+        reward_L = choice_float * rewards_0 + (1 - choice_float) * rewards_1
+
+        # Calculate the predicted reward difference for the chosen pair: R(a_W) - R(a_L)
+        predicted_reward_diff = reward_W - reward_L
+
+        # Calculate predicted preference level: delta_hat = |R(a_W) - R(a_L)|
+        delta_hat = torch.abs(predicted_reward_diff)
+
+        # Identify the ground truth metrics for the winning (W) and losing (L) actions
+        rmse_W = choice_float * nrmse_1 + (1 - choice_float) * nrmse_0
+        rmse_L = choice_float * nrmse_0 + (1 - choice_float) * nrmse_1
+
+        # Calculate ground truth preference level: delta_star = |RMSE(a_W) - RMSE(a_L)|
+        delta_star = torch.abs(rmse_W - rmse_L)
+
+        # Calculate the final loss using log sigmoid for numerical stability:
+        preference_level_penalty = alpha * (delta_star - delta_hat)**2
+        modified_reward_diff = predicted_reward_diff - preference_level_penalty
+        loss = -F.logsigmoid(modified_reward_diff).mean()
+
+        # Log the original paired rewards for monitoring/debugging if needed
         logged_rewards = torch.stack((rewards_1, rewards_0), dim=-1)
+
+        # Return loss, and optionally intermediate values for logging
         return (loss, dict(logits=logged_rewards)) if return_outputs else loss
 
 
