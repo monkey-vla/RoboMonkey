@@ -1,141 +1,30 @@
-import json
 import os
-import numpy as np
 import time
 import logging
-from dataclasses import dataclass, field
-from typing import Optional, List, Sequence
-import einops
-
-import torch
-import transformers
-from transformers import AutoTokenizer, set_seed
-
-from lora_utils import (
-    print_trainable_parameters,
-    DEFAULT_PAD_TOKEN,
-)
-from models.reward_model import (
-    RewardConfig,
-    RewardModel,
-)
-
-from action_processing import ActionTokenizer
-
-from llava import conversation as conversation_lib
-from llava.model import *
-from llava.constants import (
-    DEFAULT_IMAGE_TOKEN,
-)
-from llava.conversation import conv_templates
-from llava.train.train import smart_tokenizer_and_embedding_resize
-
+import numpy as np
+from PIL import Image
 from fastapi import FastAPI, HTTPException, Request
+from transformers import AutoTokenizer, set_seed
 import uvicorn
 import json_numpy as json
-from PIL import Image
+import torch
+import einops
 
-# Set deterministic behavior
-torch.backends.cuda.matmul.allow_tf32 = False
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-torch.use_deterministic_algorithms(True, warn_only=True)
-
-logger = logging.getLogger(__name__)
-
-
-class DisableLogger:
-    def __enter__(self):
-        logging.disable(logging.CRITICAL)
-
-    def __exit__(self, exit_type, exit_value, exit_traceback):
-        logging.disable(logging.NOTSET)
-
-
-@dataclass
-class ModelArguments:
-    model_name_or_path: Optional[str] = field(default="EleutherAI/pythia-12b")
-    trust_remote_code: Optional[bool] = field(default=False)
-    version: Optional[str] = field(default="v1")
-    freeze_backbone: bool = field(default=False)
-    tune_mm_mlp_adapter: bool = field(default=False)
-    vision_tower: Optional[str] = field(default=None)
-    mm_vision_select_layer: Optional[int] = field(default=-1)
-    pretrain_mm_mlp_adapter: Optional[str] = field(default=None)
-    mm_use_im_start_end: bool = field(default=False)
-    mm_use_im_patch_token: bool = field(default=True)
-    mm_vision_select_feature: Optional[str] = field(default="patch")
-
-
-@dataclass
-class DataArguments:
-    dataset_path: str = field(default="tatsu-lab/alpaca_farm")
-    dataset_name: str = field(default=None)
-    eval_dataset_path: str = field(default="tatsu-lab/alpaca_farm")
-    eval_dataset_name: str = field(default="alpaca_human_preference")
-    eval_size: int = field(default=500)
-    lazy_preprocess: bool = False
-    is_multimodal: bool = False
-    image_folder: Optional[str] = field(default=None)
-    image_aspect_ratio: str = "square"
-    image_grid_pinpoints: Optional[str] = field(default=None)
-    reward_prompt_file: Optional[str] = field(default=None)
-    image_to_caption_file: Optional[str] = field(default=None)
-
-
-@dataclass
-class TrainingArguments(transformers.Seq2SeqTrainingArguments):
-    cache_dir: Optional[str] = field(default=None)
-    remove_unused_columns: bool = field(default=False)
-    freeze_mm_mlp_adapter: bool = field(default=False)
-    model_max_length: int = field(default=512)
-    query_len: int = field(default=None)
-    response_len: int = field(default=None)
-    label_names: List[str] = field(default_factory=lambda: ["index_0", "index_1", "choice"])
-    padding: str = field(default="longest")
-    full_finetune: bool = field(default=False)
-    adam8bit: bool = field(default=False)
-    double_quant: bool = field(default=True)
-    quant_type: str = field(default="nf4")
-    bits: int = field(default=4)
-    lora_modules: Optional[List[str]] = field(default=None)
-    lora_r: int = field(default=64)
-    lora_alpha: float = field(default=16)
-    lora_dropout: float = field(default=0.0)
-    report_to: str = field(default="none")
-    resume_dir: Optional[str] = field(default=None)
-    output_dir: str = field(default="./output")
-    optim: str = field(default="paged_adamw_32bit")
-    per_device_train_batch_size: int = field(default=1)
-    gradient_accumulation_steps: int = field(default=16)
-    weight_decay: float = field(default=0.0)
-    learning_rate: float = field(default=0.0002)
-    max_grad_norm: float = field(default=0.3)
-    gradient_checkpointing: bool = field(default=True)
-    do_train: bool = field(default=True)
-    lr_scheduler_type: str = field(default="constant")
-    warmup_ratio: float = field(default=0.03)
-    logging_steps: int = field(default=10)
-    group_by_length: bool = field(default=True)
-    save_strategy: str = field(default="steps")
-    save_steps: int = field(default=250)
-    save_total_limit: int = field(default=40)
-    resume_from_training: bool = field(default=False)
-
-
-def pad_sequence_from_left(
-    sequences: Sequence[torch.Tensor],
-    batch_first: bool = False,
-    padding_value: float = 0.0,
-):
-    """Mirror of `torch.nn.utils.rnn.pad_sequence`, but pad from left."""
-    sequences = tuple(sequence.flip(0) for sequence in sequences)
-    padded_sequence = torch._C._nn.pad_sequence(
-        sequences, batch_first, padding_value
-    )
-    padded_sequence = padded_sequence.flip(int(batch_first))
-    return padded_sequence
-
+from reward_model_utils import (
+    pad_sequence_from_left,
+    ModelArguments,
+    DataArguments,
+    TrainingArguments,
+    DisableLogger,
+    logger,
+)
+from lora_utils import print_trainable_parameters, DEFAULT_PAD_TOKEN
+from models.reward_model import RewardConfig, RewardModel
+from action_processing import ActionTokenizer
+from llava import conversation as conversation_lib
+from llava.conversation import conv_templates
+from llava.constants import DEFAULT_IMAGE_TOKEN
+from llava.train.train import smart_tokenizer_and_embedding_resize
 
 class RobotRewardModel:
     def __init__(self):
