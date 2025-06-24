@@ -10,9 +10,9 @@ This is the official codebase for RoboMonkey: Scaling Test-Time Sampling and Ver
 
 ## Contents
  * [**Prerequisites**](#prerequisites)
- * [**action verifier**](#reward-model)
- * [**Base Policy**](#base-policy)
- * [**SIMPLER Benchmark**](#simpler-benchmark)
+ * [**Action Verifier**](#action-verifier)
+ * [**VLA Serving Engine**](#vla-serving-engine)
+ * [**SIMPLER Environment**](#simpler-environment)
 
 
 ## Prerequisites
