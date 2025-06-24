@@ -142,7 +142,7 @@ class RobotRewardModel:
         # Parse arguments from environment variables and defaults based on the shell script
         model_args = ModelArguments(
             model_name_or_path=os.path.join(os.environ.get("MODEL_DIR", "./model_dir"), 
-                                          "LLaVA-RLHF-7b-v1.5-224/sft_model/"),
+                                          "llava-v1.5-7b/sft_model/"),
             vision_tower="openai/clip-vit-large-patch14-336",
             mm_vision_select_layer=-2,
             mm_use_im_start_end=False,
@@ -164,7 +164,7 @@ class RobotRewardModel:
             lora_r=64,
             lora_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
             output_dir=os.path.join(os.environ.get("MODEL_DIR", "./model_dir"), 
-                                   "LLaVA-Fact-RM-LLaVA-RLHF-7b-v1.5-224"),
+                                   "llava-v1.5-7b"),
             freeze_mm_mlp_adapter=True,
             group_by_length=False,
             bf16=True,
@@ -224,7 +224,7 @@ class RobotRewardModel:
                     args=args,
                     config=config,
                     qlora=True,
-                    checkpoint_dir=os.path.join(os.environ.get("MODEL_DIR", "./model_dir"), "checkpoint"),
+                    checkpoint_dir=os.path.join(os.environ.get("MODEL_DIR", "./model_dir"), "lora_adapter"),
                     tokenizer=tokenizer,
                 ).to(torch.bfloat16)
 
