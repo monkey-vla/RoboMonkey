@@ -45,9 +45,9 @@ cd monkey-verifier/RLHF
 python infer_server.py
 ```
 
-## Base Policy
+## VLA Serving Engine
 
-Setup the environment for the base policy OpenVLA. We use SGLang for efficient inference.
+Setup the environment for the base policy OpenVLA. We use our VLA serving engine for efficient inference.
 ```bash
 bash scripts/env_sglang.sh
 ```
