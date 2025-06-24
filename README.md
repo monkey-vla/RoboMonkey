@@ -31,7 +31,7 @@ Your system should have conda, apt packages, and git LFS set up correctly. If no
 bash scripts/env.sh
 ```
 
-## action verifier
+## Action Verifier
 
 ```bash
 bash scripts/env_verifier.sh  # install the monkey-verifier environment
@@ -59,9 +59,9 @@ cd sglang-vla/serve_vla
 CUDA_VISIBLE_DEVICES=1 python vla/openvla_server.py --seed 1
 ```
 
-## SIMPLER Benchmark
+## SIMPLER Environment
 
-First install the SIMPLER benchmark.
+First install the SIMPLER environment.
 
 ```bash
 bash scripts/env_simpler.sh
