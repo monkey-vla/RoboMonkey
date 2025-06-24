@@ -55,7 +55,7 @@ bash scripts/env_sglang.sh
 Spin up the base policy server in a separate terminal to keep it running.
 ```bash
 conda activate sglang-vla
-cd sglang-vla/serve_vla
+cd sglang-vla
 CUDA_VISIBLE_DEVICES=1 python vla/openvla_server.py --seed 1
 ```
 
