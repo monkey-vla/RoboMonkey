@@ -85,4 +85,4 @@ Change the above command-line argument `--initial_samples 1 --augmented_samples 
 
 ## Acknowledgements
 
-We thank the authors of [OpenVLA](https://github.com/openvla/openvla), [SGLang](https://github.com/sgl-project/sglang), [SimplerEnv](https://github.com/simpler-env/SimplerEnv) and [OpenVLA-mini](https://github.com/Stanford-ILIAD/openvla-mini) for their contributions to the open-source community. Our implementation builds upon these projects. For comprehensive details and the latest updates, please consult the official documentation and repositories of the respective projects.
+We thank the authors of [OpenVLA](https://github.com/openvla/openvla), [SGLang](https://github.com/sgl-project/sglang), [SimplerEnv](https://github.com/simpler-env/SimplerEnv), [LLaVA-RLHF](https://github.com/llava-rlhf/LLaVA-RLHF), and [OpenVLA-mini](https://github.com/Stanford-ILIAD/openvla-mini) for their contributions to the open-source community. Our implementation builds upon these projects. For comprehensive details and the latest updates, please consult the official documentation and repositories of the respective projects.
