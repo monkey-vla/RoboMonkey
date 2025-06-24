@@ -22,14 +22,14 @@ source $HOME/miniconda3/etc/profile.d/conda.sh
 full_path=$(realpath $0)
 dir_path=$(dirname $full_path)
 
-if ! conda env list | grep -qE "^\s*robomonkey-reward\s"; then
-    $HOME/miniconda3/bin/conda create -n robomonkey-reward python=3.10 -y
+if ! conda env list | grep -qE "^\s*monkey-verifier\s"; then
+    $HOME/miniconda3/bin/conda create -n monkey-verifier python=3.10 -y
 else
-    echo "Conda environment 'robomonkey-reward' already exists. Skipping creation."
+    echo "Conda environment 'monkey-verifier' already exists. Skipping creation."
 fi
 
-conda activate robomonkey-reward
-cd "$dir_path/../RewardModel/llava_setup/LLaVA"
+conda activate monkey-verifier
+cd "$dir_path/../monkey-verifier/llava_setup/LLaVA"
 
 pip install --upgrade pip
 pip install -e .
@@ -43,4 +43,4 @@ check_status "LLaVA-RLHF dependencies"
 
 # Setup directories and download model
 cd "$dir_path/../"
-git clone https://huggingface.co/robomonkey-vla/RewardModel model_dir
+git clone https://huggingface.co/robomonkey-vla/monkey-verifier-7b model_dir
