@@ -28,7 +28,7 @@ The script installs RoboMonkey verifier in a separate conda environment to preve
 
 Use the following script to install all dependencies:
 ```bash
-bash scripts/env.sh
+bash scripts/setup.sh
 ```
 
 ## Action Verifier
