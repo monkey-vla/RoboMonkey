@@ -26,7 +26,7 @@ Alternatively, to clone the submodules after you have cloned this repo: `git sub
 
 The script installs RoboMonkey verifier in a separate conda environment to prevent environment interference with the base VLA model. The action verifier communicates with the base model and the simulator via HTTP endpoints. We provide bash scripts that set up the environments. The scripts have been verified to run on 2x RTX4090 with [this](https://hub.docker.com/layers/nvidia/cuda/11.8.0-cudnn8-devel-ubuntu20.04/images/sha256-0b25e1f1c6f596a6c92b04cb825714be41b4dc8323ba71205dbae8b11bfa672c) image.
 
-Your system should have conda, apt packages, and git LFS set up correctly. If not, use the following script:
+Use the following script to install all dependencies:
 ```bash
 bash scripts/env.sh
 ```
