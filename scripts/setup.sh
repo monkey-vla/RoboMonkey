@@ -30,11 +30,6 @@ retry_with_limit() {
     exit 1
 }
 
-# Step 1: Clone Repo (always fresh)
-retry_with_limit "rm -rf $REPO_NAME && git clone --recurse-submodules $REPO_URL" "Clone Repo"
-
-cd "$REPO_NAME" || exit 1
-
 # Step 2: Run env.sh
 retry_with_limit "bash scripts/env.sh" "env.sh"
 
